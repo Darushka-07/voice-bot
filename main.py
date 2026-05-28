@@ -3,9 +3,15 @@ import requests
 import telebot
 import whisper
 import tempfile
+import subprocess
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 bot = telebot.TeleBot(BOT_TOKEN)
+
+ffmpeg_path = subprocess.run(["which", "ffmpeg"], capture_output=True, text=True).stdout.strip()
+if ffmpeg_path:
+    os.environ["PATH"] = os.path.dirname(ffmpeg_path) + os.pathsep + os.environ["PATH"]
+
 model = whisper.load_model("tiny")
 
 @bot.message_handler(content_types=["voice"])
