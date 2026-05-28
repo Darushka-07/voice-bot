@@ -1,17 +1,36 @@
 import os
-import subprocess
+import requests
 import telebot
+import whisper
+import tempfile
+import static_ffmpeg
+
+static_ffmpeg.add_paths()
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 bot = telebot.TeleBot(BOT_TOKEN)
+model = whisper.load_model("tiny")
+
+@bot.message_handler(content_types=["voice"])
+def handle_voice(message):
+    bot.reply_to(message, "⏳ Транскрибую...")
+    try:
+        file_info = bot.get_file(message.voice.file_id)
+        file_url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_info.file_path}"
+        audio_data = requests.get(file_url).content
+        
+        with tempfile.NamedTemporaryFile(suffix=".ogg", delete=False) as f:
+            f.write(audio_data)
+            tmp_path = f.name
+        
+        result = model.transcribe(tmp_path)
+        text = result["text"].strip()
+        bot.reply_to(message, f"📝 {text}")
+    except Exception as e:
+        bot.reply_to(message, f"Помилка: {str(e)}")
 
 @bot.message_handler(commands=["start"])
 def start(message):
-    # Перевіряємо де знаходиться ffmpeg
-    which = subprocess.run(["which", "ffmpeg"], capture_output=True, text=True).stdout.strip()
-    find = subprocess.run(["find", "/", "-name", "ffmpeg", "-type", "f"], capture_output=True, text=True).stdout.strip()
-    path = os.environ.get("PATH", "")
-    
-    bot.reply_to(message, f"which: {which}\nfind: {find}\nPATH: {path}")
+    bot.reply_to(message, "Привіт! 👋 Надішли мені голосове повідомлення — я перетворю його на текст.")
 
 bot.polling()
