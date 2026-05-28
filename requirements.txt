@@ -2,4 +2,4 @@ pyTelegramBotAPI
 requests
 openai-whisper
 ffmpeg-python
-imageio[ffmpeg]
+static-ffmpeg
