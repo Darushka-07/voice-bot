@@ -9,7 +9,7 @@ static_ffmpeg.add_paths()
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 bot = telebot.TeleBot(BOT_TOKEN)
-model = whisper.load_model("tiny")
+model = whisper.load_model("base")
 
 @bot.message_handler(content_types=["voice"])
 def handle_voice(message):
