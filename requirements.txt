@@ -1,3 +1,5 @@
 pyTelegramBotAPI
 requests
 openai-whisper
+ffmpeg-python
+imageio[ffmpeg]
