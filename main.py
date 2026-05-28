@@ -1,15 +1,14 @@
 import os
 import requests
 import telebot
-import whisper
 import tempfile
-import static_ffmpeg
-
-static_ffmpeg.add_paths()
+from groq import Groq
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
+GROQ_TOKEN = os.environ.get("GROQ_TOKEN")
+
 bot = telebot.TeleBot(BOT_TOKEN)
-model = whisper.load_model("base")
+client = Groq(api_key=GROQ_TOKEN)
 
 @bot.message_handler(content_types=["voice"])
 def handle_voice(message):
@@ -18,14 +17,18 @@ def handle_voice(message):
         file_info = bot.get_file(message.voice.file_id)
         file_url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_info.file_path}"
         audio_data = requests.get(file_url).content
-        
+
         with tempfile.NamedTemporaryFile(suffix=".ogg", delete=False) as f:
             f.write(audio_data)
             tmp_path = f.name
-        
-        result = model.transcribe(tmp_path)
-        text = result["text"].strip()
-        bot.reply_to(message, f"📝 {text}")
+
+        with open(tmp_path, "rb") as audio_file:
+            transcription = client.audio.transcriptions.create(
+                model="whisper-large-v3",
+                file=audio_file,
+            )
+
+        bot.reply_to(message, f"📝 {transcription.text}")
     except Exception as e:
         bot.reply_to(message, f"Помилка: {str(e)}")
 
