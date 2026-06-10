@@ -1,7 +1,9 @@
+Ось повний код:
 import os
 import requests
 import telebot
 import tempfile
+import time
 from groq import Groq
 
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
@@ -36,4 +38,9 @@ def handle_voice(message):
 def start(message):
     bot.reply_to(message, "Привіт! 👋 Надішли мені голосове повідомлення — я перетворю його на текст.")
 
-bot.polling()
+while True:
+    try:
+        bot.polling(non_stop=True, interval=3)
+    except Exception as e:
+        print(f"Помилка: {e}")
+        time.sleep(5)
