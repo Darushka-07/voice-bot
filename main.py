@@ -1,4 +1,3 @@
-Ось повний код:
 import os
 import requests
 import telebot
